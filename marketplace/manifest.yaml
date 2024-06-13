@@ -1,0 +1,12 @@
+applicationName: com.spinkube.spinkube
+publisher: "Spinkube"
+description: "SpinKube on Azure Marketplace"
+version: 1.0.0 #Must be in the format of #.#.#
+helmChart: "./charts/spinkube-azure-marketplace"
+clusterArmTemplate: "./mainTemplate.json"
+uiDefinition: "./createUIDefinition.json"
+registryServer: "TODO.azurecr.io"
+testParameterFile: "./parameterFile.json"
+extensionRegistrationParameters:
+  defaultScope: "cluster" # cluster or namespace 
+  namespace: "spinkube" # Specify the namespace the extension will install into. This property is required when defaultScope field value is chosen as 'cluster'
