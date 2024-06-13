@@ -6,4 +6,5 @@ cert-manager:
 
 kwasm-operator:
   enabled: true
-  installerImage: ghcr.io/spinkube/containerd-shim-spin/node-installer:v0.14.1
+  kwasmOperator:
+    installerImage: ghcr.io/spinkube/containerd-shim-spin/node-installer:v0.14.1
