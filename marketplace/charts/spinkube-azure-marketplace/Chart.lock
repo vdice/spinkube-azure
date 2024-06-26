@@ -1,0 +1,12 @@
+dependencies:
+- name: spin-operator
+  repository: file://charts/spin-operator
+  version: 0.1.0
+- name: cert-manager
+  repository: file://charts/cert-manager
+  version: v0.1.0
+- name: kwasm-operator
+  repository: file://charts/kwasm-operator
+  version: 0.2.3
+digest: sha256:2b941a3f31eb39c2738e801f30881e3ed734379ae50968cf2419c2929386f4ff
+generated: "2024-06-12T14:02:14.844986-06:00"

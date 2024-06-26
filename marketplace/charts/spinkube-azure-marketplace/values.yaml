@@ -1,0 +1,56 @@
+global:
+  azure:
+    images:
+      # spinkube-azure-marketplace
+      kubectl:
+        tag: latest
+        image: kubectl
+        registry: bitnami
+      # spin-operator
+      spinOperator:
+        tag: v0.2.0
+        image: spin-operator
+        registry: ghcr.io/spinkube
+      spinOperatorKubeRbacProxy:
+        tag: v0.15.0
+        image: kube-rbac-proxy
+        registry: gcr.io/kubebuilder
+      # cert-manager
+      certManager:
+        tag: v1.14.6
+        image: cert-manager-controller
+        registry: quay.io/jetstack
+      certManagerAcmesolver:
+        tag: v1.14.6
+        image: cert-manager-acmesolver
+        registry: quay.io/jetstack
+      certManagerCainjector:
+        tag: v1.14.6
+        image: cert-manager-cainjector
+        registry: quay.io/jetstack
+      certManagerStartupapicheck:
+        tag: v1.14.6
+        image: cert-manager-startupapicheck
+        registry: quay.io/jetstack
+      certManagerWebhook:
+        tag: v1.14.6
+        image: cert-manager-webhook
+        registry: quay.io/jetstack
+      # kwasm-operator
+      kwasmOperator:
+        tag: kwasm-operator-0.2.2
+        image: kwasm-operator
+        registry: ghcr.io/kwasm
+      kwasmOperatorInstallerImage:
+        tag: v0.14.1
+        image: node-installer
+        registry: ghcr.io/spinkube/containerd-shim-spin
+
+spin-operator:
+  enabled: true
+
+cert-manager:
+  enabled: true
+
+kwasm-operator:
+  enabled: true
