@@ -42,7 +42,7 @@ global:
         image: kwasm-operator
         registry: ghcr.io/kwasm
       kwasmOperatorInstallerImage:
-        tag: v0.14.1
+        tag: v0.15.0
         image: node-installer
         registry: ghcr.io/spinkube/containerd-shim-spin
 
