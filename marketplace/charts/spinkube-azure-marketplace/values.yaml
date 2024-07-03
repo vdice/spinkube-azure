@@ -45,6 +45,10 @@ global:
         tag: v0.15.1
         image: node-installer
         registry: ghcr.io/spinkube/containerd-shim-spin
+      kwasmOperatorTestConnectionWget:
+        tag: latest
+        image: busybox
+        registry: docker.io
 
 spin-operator:
   enabled: true
