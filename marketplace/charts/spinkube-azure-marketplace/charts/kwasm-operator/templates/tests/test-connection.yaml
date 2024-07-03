@@ -9,7 +9,7 @@ metadata:
 spec:
   containers:
     - name: wget
-      image: busybox
+      image: {{ printf "%s/%s:%s" .Values.global.azure.images.kwasmOperatorTestConnectionWget.registry .Values.global.azure.images.kwasmOperatorTestConnectionWget.image .Values.global.azure.images.kwasmOperatorTestConnectionWget.tag }}
       command: ['wget']
       args: ['{{ include "kwasm-operator.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never

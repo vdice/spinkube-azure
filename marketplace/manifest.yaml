@@ -1,11 +1,11 @@
-applicationName: com.spinkube.spinkube
-publisher: "Spinkube"
+applicationName: spinkube
+publisher: "Fermyon"
 description: "SpinKube on Azure Marketplace"
-version: 1.0.0 #Must be in the format of #.#.#
+version: 0.1.0 #Must be in the format of #.#.#
 helmChart: "./charts/spinkube-azure-marketplace"
 clusterArmTemplate: "./mainTemplate.json"
 uiDefinition: "./createUIDefinition.json"
-registryServer: "TODO.azurecr.io"
+registryServer: "spinkubemarketplace.azurecr.io"
 testParameterFile: "./parameterFile.json"
 extensionRegistrationParameters:
   defaultScope: "cluster" # cluster or namespace 
