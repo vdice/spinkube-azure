@@ -1,0 +1,27 @@
+name: Marketplace Verify
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify the marketplace bundle
+    runs-on: ubuntu-22.04
+    container: mcr.microsoft.com/container-package-app:latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: verify
+        run: |
+          cd marketplace
+          cpa verify
+
+  # TODO(vadice): We could also utilize the ARM template test kit
+  # to verify the mainTemplate.json and createUIDefinition.json files:
+  # https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/test-toolkit#validate-templates-for-azure-marketplace
