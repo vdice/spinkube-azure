@@ -1,0 +1,27 @@
+name: Marketplace Publish
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish the marketplace bundle
+    runs-on: ubuntu-22.04
+    container: mcr.microsoft.com/container-package-app:1.3.8
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: install yq
+        run: curl -sLo /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && chmod +x /usr/bin/yq
+
+      - name: publish the bundle
+        run: |
+          az acr login -n ${{ secrets.AZURE_ACR }} -u ${{ secrets.AZURE_ACR }} -p ${{ secrets.AZURE_ACR_PASSWORD }}
+          cd marketplace
+          # Set the registry server to support publishing to alternate ACRs
+          yq -i '.registryServer = "${{ secrets.AZURE_ACR }}.azurecr.io"' manifest.yaml
+          cpa buildbundle
