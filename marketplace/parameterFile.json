@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "extensionResourceName": {
+      "value": "spinkube"
+    },
+    "clusterResourceName": {
+      "value": "spinkubecluster"
+    },
+    "createNewCluster": {
+      "value": true
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "vmSize": {
+      "value": "Standard_DS2_v2"
+    },
+    "vmEnableAutoScale": {
+      "value": true
+    },
+    "vmCount": {
+      "value": 1
+    },
+    "dnsPrefix": {
+      "value": "dns"
+    },
+    "osDiskSizeGB": {
+      "value": 0
+    },
+    "kubernetesVersion": {
+      "value": "1.28.9"
+    },
+    "networkPlugin": {
+      "value": "kubenet"
+    },
+    "enableRBAC": {
+      "value": true
+    },
+    "enablePrivateCluster": {
+      "value": false
+    },
+    "enableHttpApplicationRouting": {
+      "value": true
+    },
+    "enableAzurePolicy": {
+      "value": false
+    },
+    "enableSecretStoreCSIDriver": {
+      "value": false
+    },
+    "osSKU": {
+      "value": "Ubuntu"
+    }
+  }
+}

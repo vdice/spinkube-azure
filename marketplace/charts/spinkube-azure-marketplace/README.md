@@ -23,12 +23,6 @@ To comply, all of the sub-charts have been manually forked and updated appropria
 
   [kwasm-operator-0.2.3 tag of kwasm/kwasm-operator](https://github.com/KWasm/kwasm-operator/tree/kwasm-operator-0.2.3/charts/kwasm-operator)
 
-### Other notes
-
-- Currently this marketplace chart uses a symbolic link to the top-level `crds/` folder
-- It doesn't do the same for the `templates/` folder mostly because of the image reference modification to `templates/kwasm.annotation.yaml`,
-  but we may want to revisit this in the future if there are more shareable templates added
-
 ## Installation
 
 To install this chart onto a cluster, first create your Kubernetes cluster.
@@ -38,13 +32,12 @@ You can follow [these steps to create an AKS cluster](../README.md#create-a-new-
 ## Install SpinKube
 
 ```bash
-helm upgrade --install spinkube \
-  ./charts/spinkube-azure-marketplace \
+cd charts/spinkube-azure-marketplace
+helm dep up
+helm upgrade --install spinkube . \
   --wait \
   --namespace spinkube \
   --create-namespace
-
-kubectl apply -f ../spin-operator.shim-executor.yaml
 ```
 
 ## Deploy a Spin App
