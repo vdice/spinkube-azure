@@ -22,6 +22,20 @@ jobs:
           cd marketplace
           cpa verify
 
-  # TODO(vdice): We could also utilize the ARM template test kit
-  # to verify the mainTemplate.json and createUIDefinition.json files:
-  # https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/test-toolkit#validate-templates-for-azure-marketplace
+  arm-ttk:
+    name: Test marketplace templates
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: install arm-ttk
+        run: |
+          curl -sSLo arm-ttk.zip https://github.com/Azure/arm-ttk/releases/download/20240328/arm-ttk.zip
+          unzip arm-ttk.zip
+
+      - name: test marketplace package
+        shell: pwsh
+        run: |
+          Set-Location arm-ttk/arm-ttk
+          Import-Module ./arm-ttk.psd1
+          Test-AzMarketplacePackage -TemplatePath ../../marketplace
