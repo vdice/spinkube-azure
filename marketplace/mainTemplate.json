@@ -144,7 +144,6 @@
           "name": "[parameters('clusterResourceName')]",
           "location": "[parameters('location')]",
           "dependsOn": [],
-          "tags": {},
           "sku": {
               "name": "Basic",
               "tier": "Free"
@@ -171,9 +170,7 @@
                       "type": "VirtualMachineScaleSets",
                       "mode": "System",
                       "maxPods": 110,
-                      "availabilityZones": [],
-                      "enableNodePublicIP": false,
-                      "tags": {}
+                      "enableNodePublicIP": false
                   }
               ],
               "networkProfile": {
@@ -203,9 +200,7 @@
           "properties": {
               "extensionType": "[variables('clusterExtensionTypeName')]",
               "autoUpgradeMinorVersion": true,
-              "releaseTrain": "[variables('releaseTrain')]",
-              "configurationSettings": {},
-              "configurationProtectedSettings": {}
+              "releaseTrain": "[variables('releaseTrain')]"
           },
           "plan": {
               "name": "[variables('plan-name')]",
