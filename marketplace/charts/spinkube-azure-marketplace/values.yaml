@@ -8,7 +8,7 @@ global:
         registry: bitnami
       # spin-operator
       spinOperator:
-        tag: v0.2.0
+        tag: v0.3.0
         image: spin-operator
         registry: ghcr.io/spinkube
       spinOperatorKubeRbacProxy:
