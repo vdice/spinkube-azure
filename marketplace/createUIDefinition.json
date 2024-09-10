@@ -224,11 +224,11 @@
 						"type": "Microsoft.Common.TextBox",
 						"label": "Cluster extension resource name",
 						"defaultValue": "",
-						"toolTip": "Only lowercase alphanumeric characters are allowed, and the value must be 6-30 characters long.",
+						"toolTip": "Only lowercase alphanumeric characters are allowed, and the value must be 6-14 characters long.",
 						"constraints": {
 							"required": true,
-							"regex": "^[a-z0-9]{6,30}$",
-							"validationMessage": "Only lowercase alphanumeric characters are allowed, and the value must be 6-30 characters long."
+							"regex": "^[a-z0-9]{6,14}$",
+							"validationMessage": "Only lowercase alphanumeric characters are allowed, and the value must be 6-14 characters long."
 						},
 						"visible": true
 					}
