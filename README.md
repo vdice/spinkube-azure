@@ -21,11 +21,7 @@ kubectl config current-context
 
 ## Install SpinKube
 ```bash
-helm install spinkube .
-
-# wait for the pods to be ready
-
-kubectl apply -f spin-operator.shim-executor.yaml
+helm install --wait spinkube .
 ```
 
 ## Deploy a Spin App
