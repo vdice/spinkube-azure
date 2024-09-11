@@ -1,13 +1,17 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: kwasm-annotate-nodes
+  name: "{{ .Release.Name }}-kwasm-annotate-nodes"
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-4"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   template:
     metadata:
-      name: kwasm-annotate-nodes
+      name: "{{ .Release.Name }}-kwasm-annotate-nodes"
     spec:
-      serviceAccountName: kwasm-annotate-sa
+      serviceAccountName: "{{ .Release.Name }}-kwasm-annotate-sa"
       containers:
       - name: kubectl
         image: {{ printf "%s/%s:%s" .Values.global.azure.images.kubectl.registry .Values.global.azure.images.kubectl.image .Values.global.azure.images.kubectl.tag }}
@@ -18,12 +22,12 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: kwasm-annotate-sa
+  name: "{{ .Release.Name }}-kwasm-annotate-sa"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: kwasm-annotate-clusterrole
+  name: "{{ .Release.Name }}-kwasm-annotate-clusterrole"
 rules:
 - apiGroups: [""]
   resources: ["nodes"]
@@ -32,12 +36,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kwasm-annotate-clusterrolebinding
+  name: "{{ .Release.Name }}-kwasm-annotate-clusterrolebinding"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kwasm-annotate-clusterrole
+  name: "{{ .Release.Name }}-kwasm-annotate-clusterrole"
 subjects:
 - kind: ServiceAccount
-  name: kwasm-annotate-sa
+  name: "{{ .Release.Name }}-kwasm-annotate-sa"
   namespace: {{ .Release.Namespace }}
