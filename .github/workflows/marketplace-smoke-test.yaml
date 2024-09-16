@@ -1,0 +1,53 @@
+name: Marketplace Smoketest
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  helm-install-smoke-test:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install helm
+        uses: Azure/setup-helm@v4
+        with:
+          version: v3.15.4
+
+      - name: create kind cluster
+        uses: helm/kind-action@v1
+
+      - name: helm install spinkube
+        run: |
+          helm install spinkube \
+            --wait \
+            --namespace spinkube \
+            --create-namespace \
+            --debug \
+            marketplace/charts/spinkube-azure-marketplace
+
+      - name: run spin app
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/spinkube/spin-operator/main/config/samples/simple.yaml
+          kubectl rollout status deployment simple-spinapp --timeout 90s
+          kubectl get pods -A
+          kubectl port-forward svc/simple-spinapp 8083:80 &
+          timeout 15s bash -c 'until curl -f -vvv http://localhost:8083/hello; do sleep 2; done'
+
+      - name: debug
+        if: failure()
+        run: |
+          kubectl get pods -A
+          kubectl get certificate -n spinkube
+          kubectl logs -n spinkube -l app.kubernetes.io/name=spin-operator || true
+          kubectl describe -n spinkube pod -l app.kubernetes.io/name=spin-operator || true
+          kubectl logs -n spinkube -l app.kubernetes.io/name=kwasm-operator || true
+          kubectl describe -n spinkube pod -l app.kubernetes.io/name=kwasm-operator || true
+          kubectl logs -l core.spinoperator.dev/app-name=simple-spinapp || true
+          kubectl describe pod -l core.spinoperator.dev/app-name=simple-spinapp || true
+
+      - name: Verify curl
+        run: curl localhost:8083/hello
