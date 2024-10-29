@@ -1,0 +1,114 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-pre-delete"
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-weight": "3"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Release.Name }}-pre-delete
+      containers:
+      - name: pre-delete-job
+        image: {{ printf "%s/%s:%s" .Values.global.azure.images.kubectl.registry .Values.global.azure.images.kubectl.image .Values.global.azure.images.kubectl.tag }}
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+          - |-
+              # Prevent deletion if one or more SpinApps still exist on the cluster
+              spinapp_count="$(kubectl get spinapps.core.spinoperator.dev --all-namespaces -o name | wc -l)"
+              if [[ $spinapp_count -gt 0 ]]; then
+                echo "There are $spinapp_count SpinApps still existing on the cluster; aborting helm release deletion."
+                echo "Remove these resources before attempting to delete the helm release."
+                exit 1
+              fi
+
+              # Prevent deletion if one or more SpinAppExecutors still exist on the cluster
+              # (Not counting the containerd-shim-spin SpinAppExecutor installed as part of the post-install job)
+              spinappexecutor_count="$(kubectl get spinappexecutors.core.spinoperator.dev --all-namespaces -o name | grep -v containerd-shim-spin | wc -l)"
+              if [[ $spinappexecutor_count -gt 0 ]]; then
+                echo "There are $spinappexecutor_count SpinAppExecutors still existing on the cluster; aborting helm release deletion."
+                echo "Remove these resources before attempting to delete the helm release."
+                exit 1
+              fi
+
+              # Delete the containerd-shim-spin SpinAppExecutor installed as part of the post-install-job
+              kubectl delete --namespace default spinappexecutors.core.spinoperator.dev containerd-shim-spin
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Release.Name }}-pre-delete
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "1"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-pre-delete-role
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "1"
+rules:
+- apiGroups:
+  - core.spinoperator.dev
+  resources:
+  - spinapps
+  - spinappexecutors
+  verbs:
+  - get
+  - list
+  - watch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: '{{ .Release.Name }}-pre-delete-rolebinding'
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-delete
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "2"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: '{{ .Release.Name }}-pre-delete-role'
+subjects:
+- kind: ServiceAccount
+  name: '{{ .Release.Name }}-pre-delete'
+  namespace: '{{ .Release.Namespace }}'
