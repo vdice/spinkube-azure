@@ -1,0 +1,117 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}-post-delete"
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-weight": "3"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Release.Name }}-post-delete
+      containers:
+      - name: post-delete-job
+        image: {{ printf "%s/%s:%s" .Values.global.azure.images.kubectl.registry .Values.global.azure.images.kubectl.image .Values.global.azure.images.kubectl.tag }}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: RELEASE_NAMESPACE
+          value: {{ .Release.Namespace }}
+        command: ["/bin/sh", "-c"]
+        args:
+          - |-
+              # Delete spin-operator CRDs
+              kubectl delete customresourcedefinition.apiextensions.k8s.io/spinapps.core.spinoperator.dev
+              kubectl delete customresourcedefinition.apiextensions.k8s.io/spinappexecutors.core.spinoperator.dev
+
+              # Delete cert-manager CRDs
+              kubectl delete customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io
+              kubectl delete customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io
+              kubectl delete customresourcedefinition.apiextensions.k8s.io/challenges.acme.cert-manager.io
+              kubectl delete customresourcedefinition.apiextensions.k8s.io/clusterissuers.cert-manager.io
+              kubectl delete customresourcedefinition.apiextensions.k8s.io/issuers.cert-manager.io
+              kubectl delete customresourcedefinition.apiextensions.k8s.io/orders.acme.cert-manager.io
+
+              # Delete the namespace
+              # Note: Helm won't delete the release namespace resource when deleting a release.
+              kubectl delete ns "${RELEASE_NAMESPACE}"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Release.Name }}-post-delete
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "1"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Name }}-post-delete-role
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "1"
+rules:
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - list
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - list
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: '{{ .Release.Name }}-post-delete-rolebinding'
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": post-delete
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook-weight": "2"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: '{{ .Release.Name }}-post-delete-role'
+subjects:
+- kind: ServiceAccount
+  name: '{{ .Release.Name }}-post-delete'
+  namespace: '{{ .Release.Namespace }}'
