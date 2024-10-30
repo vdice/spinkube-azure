@@ -1,9 +1,7 @@
-name: Marketplace Smoketest
+name: Marketplace Helm Uninstall test
 
 on:
   push:
-    branches: ["main"]
-  pull_request:
     branches: ["main"]
 
 env:
@@ -56,11 +54,33 @@ jobs:
       - name: Verify curl
         run: curl localhost:8083/hello
 
+      - name: helm delete spinkube
+        run: |
+          if helm delete --timeout 1m spinkube --namespace spinkube; then
+            echo "A Spin App remains on the cluster; the helm release should not have uninstalled successfully."
+            exit 1
+          fi
+
+          kubectl logs -n spinkube -l job-name=spinkube-pre-delete | \
+            grep -q "There are 1 SpinApps still existing on the cluster; aborting helm release deletion."
+
+      - name: Ensure Spin app still reachable
+        run: curl localhost:8083/hello
+
+      - name: Ensure SpinKube resources still exit
+        run: |
+          kubectl describe -n spinkube pod -l app.kubernetes.io/name=spin-operator
+          kubectl describe -n spinkube pod -l app.kubernetes.io/name=kwasm-operator
+          kubectl get crd -o name | grep -q cert-manager
+          kubectl get crd -o name | grep -q spinapp
+          kubectl get ns -o name | grep -q spinkube
+
       - name: Delete Spin App
         run: kubectl delete spinapp simple-spinapp
 
       - name: helm delete spinkube
         run: helm delete spinkube --namespace spinkube
+
 
       - name: Verify all resources are deleted
         run: |
