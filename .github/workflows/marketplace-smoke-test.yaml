@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ["main"]
 
+env:
+  # This version should match the (forked) version of the spin-operator sub-chart
+  SPIN_OPERATOR_VERSION: v0.3.0
+
 jobs:
   helm-install-smoke-test:
     runs-on: ubuntu-22.04
@@ -31,13 +35,13 @@ jobs:
 
       - name: run spin app
         run: |
-          kubectl apply -f https://raw.githubusercontent.com/spinkube/spin-operator/main/config/samples/simple.yaml
+          kubectl apply -f https://raw.githubusercontent.com/spinkube/spin-operator/${{ env.SPIN_OPERATOR_VERSION }}/config/samples/simple.yaml
           kubectl rollout status deployment simple-spinapp --timeout 90s
           kubectl get pods -A
           kubectl port-forward svc/simple-spinapp 8083:80 &
           timeout 15s bash -c 'until curl -f -vvv http://localhost:8083/hello; do sleep 2; done'
 
-      - name: debug
+      - name: debug install
         if: failure()
         run: |
           kubectl get pods -A
@@ -51,3 +55,46 @@ jobs:
 
       - name: Verify curl
         run: curl localhost:8083/hello
+
+      - name: helm delete spinkube
+        run: |
+          if helm delete spinkube --timeout 1m --namespace spinkube; then
+            echo "A Spin App remains on the cluster; the helm release should not have uninstalled successfully."
+            exit 1
+          fi
+
+          kubectl logs -n spinkube -l job-name=spinkube-pre-delete | \
+            grep -q "There are 1 SpinApps still existing on the cluster; aborting helm release deletion."
+
+      - name: Ensure Spin app still reachable
+        run: curl localhost:8083/hello
+
+      - name: Ensure SpinKube resources still exist
+        run: |
+          kubectl get po -n spinkube -o name | grep -q spin-operator
+          kubectl get po -n spinkube -o name | grep -q kwasm-operator
+          kubectl get po -n spinkube -o name | grep -q cert-manager
+          kubectl get crd -o name | grep -q spinapp
+          kubectl get crd -o name | grep -q cert-manager
+
+      - name: Delete Spin App
+        run: kubectl delete spinapp simple-spinapp
+
+      - name: helm delete spinkube
+        run: helm delete spinkube --timeout 1m --namespace spinkube
+
+      - name: Verify all resources are deleted
+        run: |
+          timeout 15s bash -c 'until ! kubectl get crd -o name | grep -q cert-manager; do sleep 2; done'
+          timeout 15s bash -c 'until ! kubectl get crd -o name | grep -q spinapp; do sleep 2; done'
+          timeout 15s bash -c 'until ! kubectl get ns -o name | grep -q spinkube; do sleep 2; done'
+
+      - name: debug uninstall
+        if: failure()
+        run: |
+          kubectl get pods -A
+          kubectl get crd -A
+          kubectl get ns -A
+          kubectl describe pods -A
+          kubectl describe crd -A
+          kubectl describe ns -A
