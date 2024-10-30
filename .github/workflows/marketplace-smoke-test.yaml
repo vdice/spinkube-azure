@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ["main"]
 
+env:
+  # This version should match the (forked) version of the spin-operator sub-chart
+  SPIN_OPERATOR_VERSION: v0.3.0
+
 jobs:
   helm-install-smoke-test:
     runs-on: ubuntu-22.04
@@ -31,13 +35,13 @@ jobs:
 
       - name: run spin app
         run: |
-          kubectl apply -f https://raw.githubusercontent.com/spinkube/spin-operator/main/config/samples/simple.yaml
+          kubectl apply -f https://raw.githubusercontent.com/spinkube/spin-operator/${{ env.SPIN_OPERATOR_VERSION }}/config/samples/simple.yaml
           kubectl rollout status deployment simple-spinapp --timeout 90s
           kubectl get pods -A
           kubectl port-forward svc/simple-spinapp 8083:80 &
           timeout 15s bash -c 'until curl -f -vvv http://localhost:8083/hello; do sleep 2; done'
 
-      - name: debug
+      - name: debug install
         if: failure()
         run: |
           kubectl get pods -A
@@ -51,3 +55,26 @@ jobs:
 
       - name: Verify curl
         run: curl localhost:8083/hello
+
+      - name: Delete Spin App
+        run: kubectl delete spinapp simple-spinapp
+
+      # TODO: Add test (separate workflow?) around helm delete when SpinApp(Executor) resources exist
+      # (helm release deletion should be blocked)
+
+      - name: helm delete spinkube
+        run: helm delete spinkube --namespace spinkube
+
+      - name: Verify all resources are deleted
+        shell: bash
+        run: |
+          timeout 15s bash -c 'until ! kubectl get crd -o name | grep -q cert-manager; do sleep 2; done'
+          timeout 15s bash -c 'until ! kubectl get crd -o name | grep -q spinapp; do sleep 2; done'
+          timeout 15s bash -c 'until ! kubectl get ns -o name | grep -q spinkube; do sleep 2; done'
+
+      - name: debug uninstall
+        if: failure()
+        run: |
+          kubectl get pods -A
+          kubectl get crd -A
+          kubectl get ns -A
