@@ -8,7 +8,7 @@ on:
 
 env:
   # This version should match the (forked) version of the spin-operator sub-chart
-  SPIN_OPERATOR_VERSION: v0.3.0
+  SPIN_OPERATOR_VERSION: v0.4.0
 
 jobs:
   helm-install-smoke-test:
@@ -50,8 +50,8 @@ jobs:
           kubectl describe -n spinkube pod -l app.kubernetes.io/name=spin-operator || true
           kubectl logs -n spinkube -l app.kubernetes.io/name=kwasm-operator || true
           kubectl describe -n spinkube pod -l app.kubernetes.io/name=kwasm-operator || true
-          kubectl logs -l core.spinoperator.dev/app-name=simple-spinapp || true
-          kubectl describe pod -l core.spinoperator.dev/app-name=simple-spinapp || true
+          kubectl logs -l core.spinkube.dev/app-name=simple-spinapp || true
+          kubectl describe pod -l core.spinkube.dev/app-name=simple-spinapp || true
 
       - name: Verify curl
         run: curl localhost:8083/hello
