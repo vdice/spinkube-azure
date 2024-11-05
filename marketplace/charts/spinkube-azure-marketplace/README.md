@@ -13,7 +13,7 @@ To comply, all of the sub-charts have been manually forked and updated appropria
 
 - **Spin Operator**
 
-  [v0.3.0 tag of spinkube/spin-operator](https://github.com/spinkube/spin-operator/tree/v0.3.0/charts/spin-operator)
+  [v0.4.0 tag of spinkube/spin-operator](https://github.com/spinkube/spin-operator/tree/v0.4.0/charts/spin-operator)
 
 - **Cert Manager**
 

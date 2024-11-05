@@ -30,7 +30,7 @@ spec:
         args:
           - |-
               # Prevent deletion if one or more SpinApps still exist on the cluster
-              spinapp_count="$(kubectl get spinapps.core.spinoperator.dev --all-namespaces -o name | wc -l)"
+              spinapp_count="$(kubectl get spinapps.core.spinkube.dev --all-namespaces -o name | wc -l)"
               if [[ $spinapp_count -gt 0 ]]; then
                 echo "There are $spinapp_count SpinApps still existing on the cluster; aborting helm release deletion."
                 echo "Remove these resources before attempting to delete the helm release."
@@ -39,7 +39,7 @@ spec:
 
               # Prevent deletion if one or more SpinAppExecutors still exist on the cluster
               # (Not counting the containerd-shim-spin SpinAppExecutor installed as part of the post-install job)
-              spinappexecutor_count="$(kubectl get spinappexecutors.core.spinoperator.dev --all-namespaces -o name | grep -v containerd-shim-spin | wc -l)"
+              spinappexecutor_count="$(kubectl get spinappexecutors.core.spinkube.dev --all-namespaces -o name | grep -v containerd-shim-spin | wc -l)"
               if [[ $spinappexecutor_count -gt 0 ]]; then
                 echo "There are $spinappexecutor_count SpinAppExecutors still existing on the cluster; aborting helm release deletion."
                 echo "Remove these resources before attempting to delete the helm release."
@@ -47,7 +47,7 @@ spec:
               fi
 
               # Delete the containerd-shim-spin SpinAppExecutor installed as part of the post-install-job
-              kubectl delete --namespace default spinappexecutors.core.spinoperator.dev containerd-shim-spin
+              kubectl delete --namespace default spinappexecutors.core.spinkube.dev containerd-shim-spin
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -80,7 +80,7 @@ metadata:
     "helm.sh/hook-weight": "1"
 rules:
 - apiGroups:
-  - core.spinoperator.dev
+  - core.spinkube.dev
   resources:
   - spinapps
   - spinappexecutors
