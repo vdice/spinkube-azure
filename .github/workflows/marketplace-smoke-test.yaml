@@ -24,6 +24,8 @@ jobs:
       - name: create kind cluster
         uses: helm/kind-action@v1
 
+      ## Install SpinKube and verify Spin App runs
+
       - name: helm install spinkube
         run: |
           helm install spinkube \
@@ -56,6 +58,25 @@ jobs:
       - name: Verify curl
         run: curl localhost:8083/hello
 
+      ## Upgrade release and verify shim is re-installed
+
+      - name: delete any lingering kwasm jobs
+        run: kubectl -n spinkube delete job -l kwasm.sh/job=true
+
+      - name: helm upgrade spinkube and watch for annotate and install job completions
+        run: |
+          helm upgrade spinkube \
+            --wait \
+            --namespace spinkube \
+            --debug \
+            marketplace/charts/spinkube-azure-marketplace &
+          timeout 30s bash -c 'until [[ "$(kubectl -n spinkube get job -l job-name=spinkube-kwasm-annotate-nodes -o json | jq '.items[].spec.completions')" == "1" ]]; do sleep 2; done'
+          timeout 30s bash -c 'until [[ "$(kubectl -n spinkube get job -l kwasm.sh/job=true -o json | jq '.items[].spec.completions')" == "1" ]]; do sleep 2; done'
+
+      ## Delete release
+
+      # First, verify deletion is blocked when Spin App resources exist
+
       - name: helm delete spinkube
         run: |
           if helm delete spinkube --timeout 1m --namespace spinkube; then
@@ -79,6 +100,8 @@ jobs:
 
       - name: Delete Spin App
         run: kubectl delete spinapp simple-spinapp
+
+      # Now verify deletion proceeds and no resources remain
 
       - name: helm delete spinkube
         run: helm delete spinkube --timeout 1m --namespace spinkube
