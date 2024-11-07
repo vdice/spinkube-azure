@@ -3,7 +3,7 @@ kind: Job
 metadata:
   name: "{{ .Release.Name }}-kwasm-annotate-nodes"
   annotations:
-    "helm.sh/hook": post-install
+    "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "-4"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
@@ -15,8 +15,13 @@ spec:
       containers:
       - name: kubectl
         image: {{ printf "%s/%s:%s" .Values.global.azure.images.kubectl.registry .Values.global.azure.images.kubectl.image .Values.global.azure.images.kubectl.tag }}
-        command: ["kubectl"]
-        args: ["annotate", "node", "--all", "kwasm.sh/kwasm-node=true"]
+        command: ["/bin/sh", "-c"]
+        args:
+          - |-
+            echo "Annotating node with kwasm.sh/kwasm-node=false to reset installation of the shim for upgrade scenarios"
+            kubectl annotate node --all kwasm.sh/kwasm-node=false --overwrite
+            echo "Annotating node with kwasm.sh/kwasm-node=true to (re-)trigger installation of the shim"
+            kubectl annotate node --all kwasm.sh/kwasm-node=true --overwrite
       restartPolicy: OnFailure
 ---
 apiVersion: v1
