@@ -30,7 +30,7 @@
       "value": 0
     },
     "kubernetesVersion": {
-      "value": "1.28.9"
+      "value": "1.29.10"
     },
     "networkPlugin": {
       "value": "kubenet"
