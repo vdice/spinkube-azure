@@ -48,6 +48,18 @@ spec:
 
               # Delete the containerd-shim-spin SpinAppExecutor installed as part of the post-install-job
               kubectl delete --namespace default spinappexecutors.core.spinkube.dev containerd-shim-spin
+
+              # Prevent deletion if one or more Shims still exist on the cluster
+              # (Not counting the spin-v2 Shim installed as part of the post-install job)
+              shim_count="$(kubectl get shims.runtime.spinkube.dev --all-namespaces -o name | grep -v spin-v2 |  wc -l)"
+              if [[ $shim_count -gt 0 ]]; then
+                echo "There are $shim_count Shims still existing on the cluster; aborting helm release deletion."
+                echo "Remove these resources before attempting to delete the helm release."
+                exit 1
+              fi
+
+              # Delete the spin-v2 Shim installed as part of the post-install-job
+              kubectl delete --namespace default shims.runtime.spinkube.dev spin-v2
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -84,6 +96,15 @@ rules:
   resources:
   - spinapps
   - spinappexecutors
+  verbs:
+  - get
+  - list
+  - watch
+  - delete
+- apiGroups:
+  - runtime.spinkube.dev
+  resources:
+  - shims
   verbs:
   - get
   - list

@@ -36,6 +36,9 @@ spec:
               kubectl delete customresourcedefinition.apiextensions.k8s.io/spinapps.core.spinkube.dev
               kubectl delete customresourcedefinition.apiextensions.k8s.io/spinappexecutors.core.spinkube.dev
 
+              # Delete runtime-class-manager CRDs
+              kubectl delete customresourcedefinition.apiextensions.k8s.io/shims.runtime.spinkube.dev
+
               # Delete cert-manager CRDs
               kubectl delete customresourcedefinition.apiextensions.k8s.io/certificaterequests.cert-manager.io
               kubectl delete customresourcedefinition.apiextensions.k8s.io/certificates.cert-manager.io

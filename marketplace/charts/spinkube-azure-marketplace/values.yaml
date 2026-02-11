@@ -36,19 +36,19 @@ global:
         tag: v1.14.6
         image: cert-manager-webhook
         registry: quay.io/jetstack
-      # kwasm-operator
-      kwasmOperator:
-        tag: kwasm-operator-0.2.2
-        image: kwasm-operator
-        registry: ghcr.io/kwasm
-      kwasmOperatorInstallerImage:
-        tag: v0.17.0
+      # runtime-class-manager
+      runtimeClassManager:
+        tag: latest # v0.2.0
+        image: runtime-class-manager
+        registry: ghcr.io/spinframework
+      nodeInstaller:
+        tag: latest # v0.2.0
         image: node-installer
-        registry: ghcr.io/spinkube/containerd-shim-spin
-      kwasmOperatorTestConnectionWget:
-        tag: latest
-        image: busybox
-        registry: docker.io
+        registry: ghcr.io/spinframework
+      shimDownloader:
+        tag: latest # v0.2.0
+        image: shim-downloader
+        registry: ghcr.io/spinframework
 
 spin-operator:
   enabled: true
@@ -56,5 +56,5 @@ spin-operator:
 cert-manager:
   enabled: true
 
-kwasm-operator:
+runtime-class-manager:
   enabled: true

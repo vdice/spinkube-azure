@@ -1,29 +1,29 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: kwasm-annotate-nodes
+  name: rcm-label-nodes
 spec:
   template:
     metadata:
-      name: kwasm-annotate-nodes
+      name: rcm-label-nodes
     spec:
-      serviceAccountName: kwasm-annotate-sa
+      serviceAccountName: rcm-label-nodes-sa
       containers:
       - name: kubectl
         image: bitnami/kubectl:latest
         command: ["kubectl"]
-        args: ["annotate", "node", "--all", "kwasm.sh/kwasm-node=true"]
+        args: ["label", "node", "--all", "spin=true"]
       restartPolicy: OnFailure
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: kwasm-annotate-sa
+  name: rcm-label-nodes-sa
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: kwasm-annotate-clusterrole
+  name: rcm-label-nodes-clusterrole
 rules:
 - apiGroups: [""]
   resources: ["nodes"]
@@ -32,12 +32,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kwasm-annotate-clusterrolebinding
+  name: rcm-label-nodes-clusterrolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kwasm-annotate-clusterrole
+  name: rcm-label-nodes-clusterrole
 subjects:
 - kind: ServiceAccount
-  name: kwasm-annotate-sa
+  name: rcm-label-nodes-sa
   namespace: default

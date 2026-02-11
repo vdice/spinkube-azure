@@ -50,28 +50,38 @@ jobs:
           kubectl get certificate -n spinkube
           kubectl logs -n spinkube -l app.kubernetes.io/name=spin-operator || true
           kubectl describe -n spinkube pod -l app.kubernetes.io/name=spin-operator || true
-          kubectl logs -n spinkube -l app.kubernetes.io/name=kwasm-operator || true
-          kubectl describe -n spinkube pod -l app.kubernetes.io/name=kwasm-operator || true
+          kubectl logs -n spinkube -l app.kubernetes.io/name=runtime-class-manager || true
+          kubectl describe -n spinkube pod -l app.kubernetes.io/name=runtime-class-manager || true
+          kubectl describe pod -n spinkube -l batch.kubernetes.io/job-name=spinkube-post-install || true
+          kubectl logs -n spinkube -l batch.kubernetes.io/job-name=spinkube-post-install || true
           kubectl logs -l core.spinkube.dev/app-name=simple-spinapp || true
           kubectl describe pod -l core.spinkube.dev/app-name=simple-spinapp || true
 
       - name: Verify curl
         run: curl localhost:8083/hello
 
-      ## Upgrade release and verify shim is re-installed
+      # TODO: This functionality is currently susceptible to hitting the following runtime-class-manager
+      # bug: https://github.com/spinframework/runtime-class-manager/issues/66
+      #
+      # Re-enable these checks once we're using a version with this issue fixed
 
-      - name: delete any lingering kwasm jobs
-        run: kubectl -n spinkube delete job -l kwasm.sh/job=true
+      ## Delete Shim resource, upgrade release and verify shim is re-installed
 
-      - name: helm upgrade spinkube and watch for annotate and install job completions
-        run: |
-          helm upgrade spinkube \
-            --wait \
-            --namespace spinkube \
-            --debug \
-            marketplace/charts/spinkube-azure-marketplace &
-          timeout 30s bash -c 'until [[ "$(kubectl -n spinkube get job -l job-name=spinkube-kwasm-annotate-nodes -o json | jq '.items[].spec.completions')" == "1" ]]; do sleep 2; done'
-          timeout 30s bash -c 'until [[ "$(kubectl -n spinkube get job -l kwasm.sh/job=true -o json | jq '.items[].spec.completions')" == "1" ]]; do sleep 2; done'
+      # - name: delete any lingering shim installation jobs
+      #   run: kubectl -n spinkube delete job -l job-name=kind-control-plane-spin-v2-install
+
+      # - name: delete spin-v2 Shim
+      #   run: kubectl delete shim spin-v2
+
+      # - name: helm upgrade spinkube and watch for label-nodes and shim install job completions
+      #   run: |
+      #     helm upgrade spinkube \
+      #       --wait \
+      #       --namespace spinkube \
+      #       --debug \
+      #       marketplace/charts/spinkube-azure-marketplace &
+      #     timeout 30s bash -c 'until [[ "$(kubectl -n spinkube get job -l job-name=spinkube-rcm-label-nodes -o json | jq '.items[].spec.completions')" == "1" ]]; do sleep 2; done'
+      #     timeout 30s bash -c 'until [[ "$(kubectl -n spinkube get job -l job-name=kind-control-plane-spin-v2-install -o json | jq '.items[].spec.completions')" == "1" ]]; do sleep 2; done'
 
       ## Delete release
 
@@ -93,9 +103,10 @@ jobs:
       - name: Ensure SpinKube resources still exist
         run: |
           kubectl get po -n spinkube -o name | grep -q spin-operator
-          kubectl get po -n spinkube -o name | grep -q kwasm-operator
+          kubectl get po -n spinkube -o name | grep -q runtime-class-manager
           kubectl get po -n spinkube -o name | grep -q cert-manager
           kubectl get crd -o name | grep -q spinapp
+          kubectl get crd -o name | grep -q shims
           kubectl get crd -o name | grep -q cert-manager
 
       - name: Delete Spin App
@@ -109,6 +120,7 @@ jobs:
       - name: Verify all resources are deleted
         run: |
           timeout 15s bash -c 'until ! kubectl get crd -o name | grep -q cert-manager; do sleep 2; done'
+          timeout 15s bash -c 'until ! kubectl get crd -o name | grep -q shims; do sleep 2; done'
           timeout 15s bash -c 'until ! kubectl get crd -o name | grep -q spinapp; do sleep 2; done'
           timeout 15s bash -c 'until ! kubectl get ns -o name | grep -q spinkube; do sleep 2; done'
 

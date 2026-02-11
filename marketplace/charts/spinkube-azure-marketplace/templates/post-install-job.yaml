@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
   annotations:
-    "helm.sh/hook": post-install
+    "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "-5"
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
@@ -39,6 +39,36 @@ spec:
                 createDeployment: true
                 deploymentConfig:
                   runtimeClassName: wasmtime-spin-v2
+              ---
+              apiVersion: runtime.spinkube.dev/v1alpha1 
+              kind: Shim
+              metadata:
+                name: spin-v2
+                namespace: default
+              spec:
+                nodeSelector:
+                  spin: "true"
+
+                fetchStrategy:
+                  platforms:
+                    - os: linux
+                      arch: aarch64
+                      location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.23.0/containerd-shim-spin-v2-linux-aarch64.tar.gz"
+                      sha256: "a923f08d91c110d2cda29fbc380273e6d0a97aa0bab455c55f613c8d5a8bfbe4"
+                    - os: linux
+                      arch: x86_64
+                      location: "https://github.com/spinframework/containerd-shim-spin/releases/download/v0.23.0/containerd-shim-spin-v2-linux-x86_64.tar.gz"
+                      sha256: "eec8df96fa3a4fe5dbc57ffb706461692c055299dd6d22dff9444863a2a12281"
+
+                containerdRuntimeOptions:
+                  SystemdCgroup: "true"
+
+                runtimeClass:
+                  name: wasmtime-spin-v2
+                  handler: spin-v2
+
+                rolloutStrategy:
+                  type: recreate
               EOF
 ---
 apiVersion: v1
@@ -53,7 +83,7 @@ metadata:
     helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
   name: {{ .Release.Name }}-post-install-role
   namespace: default
@@ -76,9 +106,21 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - runtime.spinkube.dev
+  resources:
+  - shims
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   name: '{{ .Release.Name }}-post-install-rolebinding'
   namespace: default
@@ -90,7 +132,7 @@ metadata:
     helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: '{{ .Release.Name }}-post-install-role'
 subjects:
 - kind: ServiceAccount

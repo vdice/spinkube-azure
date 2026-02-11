@@ -19,9 +19,9 @@ To comply, all of the sub-charts have been manually forked and updated appropria
 
   [v1.14.3 tag of cert-manager/cert-manager](https://github.com/cert-manager/cert-manager/tree/v1.14.3/deploy/charts/cert-manager)
 
-- **Kwasm Operator**
+- **Runtime Class Manager**
 
-  [kwasm-operator-0.2.3 tag of kwasm/kwasm-operator](https://github.com/KWasm/kwasm-operator/tree/kwasm-operator-0.2.3/charts/kwasm-operator)
+  [v0.1.0 tag of spinframework/runtime-class-manager](https://github.com/spinframework/runtime-class-manager/tree/v0.1.0/deploy/helm)
 
 ## Installation
 

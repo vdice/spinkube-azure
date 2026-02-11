@@ -33,7 +33,7 @@ dependencies:
     version: 1.14.3
     repository: "https://charts.jetstack.io"
     condition: cert-manager.enabled
-  - name: kwasm-operator
-    version: 0.2.3
-    repository: "http://kwasm.sh/kwasm-operator/"
-    condition: kwasm-operator.enabled
+  - name: runtime-class-manager
+    version: v0.1.0-20260311-200734-ge3055ee # TODO: 0.2.0
+    repository: "oci://ghcr.io/spinframework/charts"
+    condition: runtime-class-manager.enabled

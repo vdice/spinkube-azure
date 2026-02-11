@@ -5,8 +5,8 @@ dependencies:
 - name: cert-manager
   repository: file://charts/cert-manager
   version: v0.1.0
-- name: kwasm-operator
-  repository: file://charts/kwasm-operator
-  version: 0.2.3
-digest: sha256:692c93c60d865c3fa36a8b60a7761889b5663f25fc5a2838528a1a8e9f8d33e1
-generated: "2024-11-05T14:50:24.550048-07:00"
+- name: runtime-class-manager
+  repository: file://charts/runtime-class-manager
+  version: 0.1.0
+digest: sha256:9c74e5806c675093350c570e172434aadf7323c5cf727190fa40dc65be195360
+generated: "2026-02-10T16:35:34.070198-07:00"

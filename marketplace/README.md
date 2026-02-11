@@ -14,7 +14,7 @@ The following guide is used for assembling these assets and publishing the resul
 
 ## Helm Chart
 
-Currently, the SpinKube Helm chart for the Azure Marketplace consists of forked charts for all of its dependencies (Spin Operator, Cert Manager, Kwasm Operator). Therefore, updating any of these is a manual process. See the chart [README.md](./charts/spinkube-azure-marketplace/README.md) for more info.
+Currently, the SpinKube Helm chart for the Azure Marketplace consists of forked charts for all of its dependencies (Spin Operator, Cert Manager, Runtime Class Manager). Therefore, updating any of these is a manual process. See the chart [README.md](./charts/spinkube-azure-marketplace/README.md) for more info.
 
 When any of these chart dependencies are updated, please update the version(s) used in the chart [README.md](./charts/spinkube-azure-marketplace/README.md) as well.
 

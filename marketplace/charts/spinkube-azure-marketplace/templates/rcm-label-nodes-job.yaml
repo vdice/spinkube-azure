@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: "{{ .Release.Name }}-kwasm-annotate-nodes"
+  name: "{{ .Release.Name }}-rcm-label-nodes"
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "-4"
@@ -9,30 +9,30 @@ metadata:
 spec:
   template:
     metadata:
-      name: "{{ .Release.Name }}-kwasm-annotate-nodes"
+      name: "{{ .Release.Name }}-rcm-label-nodes"
     spec:
-      serviceAccountName: "{{ .Release.Name }}-kwasm-annotate-sa"
+      serviceAccountName: "{{ .Release.Name }}-rcm-label-nodes-sa"
       containers:
       - name: kubectl
         image: {{ printf "%s/%s:%s" .Values.global.azure.images.kubectl.registry .Values.global.azure.images.kubectl.image .Values.global.azure.images.kubectl.tag }}
         command: ["/bin/sh", "-c"]
         args:
           - |-
-            echo "Annotating nodes with kwasm.sh/kwasm-node=false to reset installation of the shim for upgrade scenarios"
-            kubectl annotate node --all kwasm.sh/kwasm-node=false --overwrite
-            echo "Annotating nodes with kwasm.sh/kwasm-node=true to (re-)trigger installation of the shim"
-            kubectl annotate node --all kwasm.sh/kwasm-node=true --overwrite
+            echo "Labeling nodes with spin=false to reset installation of the shim for upgrade scenarios"
+            kubectl label node --all spin=false --overwrite
+            echo "Labeling nodes with spin=true to (re-)trigger installation of the shim"
+            kubectl label node --all spin=true --overwrite
       restartPolicy: OnFailure
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: "{{ .Release.Name }}-kwasm-annotate-sa"
+  name: "{{ .Release.Name }}-rcm-label-nodes-sa"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: "{{ .Release.Name }}-kwasm-annotate-clusterrole"
+  name: "{{ .Release.Name }}-rcm-label-nodes-clusterrole"
 rules:
 - apiGroups: [""]
   resources: ["nodes"]
@@ -41,12 +41,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: "{{ .Release.Name }}-kwasm-annotate-clusterrolebinding"
+  name: "{{ .Release.Name }}-rcm-label-nodes-clusterrolebinding"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: "{{ .Release.Name }}-kwasm-annotate-clusterrole"
+  name: "{{ .Release.Name }}-rcm-label-nodes-clusterrole"
 subjects:
 - kind: ServiceAccount
-  name: "{{ .Release.Name }}-kwasm-annotate-sa"
+  name: "{{ .Release.Name }}-rcm-label-nodes-sa"
   namespace: {{ .Release.Namespace }}

@@ -5,8 +5,8 @@ dependencies:
 - name: cert-manager
   repository: https://charts.jetstack.io
   version: v1.14.3
-- name: kwasm-operator
-  repository: http://kwasm.sh/kwasm-operator/
-  version: 0.2.3
-digest: sha256:0c192cc2f5c8fd54137c986bfa1278959ccbe64a5e7b58b40d5661a5f34910c0
-generated: "2024-11-05T14:48:48.29812-07:00"
+- name: runtime-class-manager
+  repository: oci://ghcr.io/spinframework/charts
+  version: v0.1.0-20260311-200734-ge3055ee
+digest: sha256:9ac4c47a5bb56044182fae5bfa482633b1f153860e94cc012f748ff34fcb6ec7
+generated: "2026-03-12T10:49:38.6894-06:00"

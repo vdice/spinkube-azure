@@ -33,7 +33,7 @@ dependencies:
     version: v0.1.0
     repository: "file://charts/cert-manager"
     condition: cert-manager.enabled
-  - name: kwasm-operator
-    version: 0.2.3
-    repository: "file://charts/kwasm-operator"
-    condition: kwasm-operator.enabled
+  - name: runtime-class-manager
+    version: 0.2.0
+    repository: "file://charts/runtime-class-manager"
+    condition: runtime-class-manager.enabled
